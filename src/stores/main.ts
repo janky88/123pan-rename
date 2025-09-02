@@ -17,6 +17,7 @@ export const useMainStore = defineStore('main', () => {
   const to = ref('')
   const prefix = ref('')
   const season = ref('')
+  const offset = ref('')
   const epHelperPre = ref('')
   const epHelperPost = ref('')
 
@@ -122,7 +123,7 @@ export const useMainStore = defineStore('main', () => {
   }, 300)
 
   // generate new filenames
-  watch([list, activeMode, prefix, season, from, to, epHelperPre, epHelperPost], debouncedNameGenerator, { immediate: true })
+  watch([list, activeMode, prefix, season, offset, from, to, epHelperPre, epHelperPost], debouncedNameGenerator, { immediate: true })
 
   function guessPrefixAndSeason() {
     prefix.value = guessPrefix(videoList.value)
@@ -190,7 +191,7 @@ export const useMainStore = defineStore('main', () => {
 
   function getNewName(oldName: string, season: string, refName?: string) {
     if (activeMode.value === 'extract')
-      return getNewNameByExtract(oldName, prefix.value.trim(), season, { pre: epHelperPre.value, post: epHelperPost.value }, refName)
+      return getNewNameByExtract(oldName, prefix.value.trim(), season, { pre: epHelperPre.value, post: epHelperPost.value }, refName, offset.value)
     else
       return getNewNameByExp(oldName, from.value, to.value)
   }
@@ -221,6 +222,7 @@ export const useMainStore = defineStore('main', () => {
     to,
     prefix,
     season,
+    offset,
     error,
     warning,
     processData,

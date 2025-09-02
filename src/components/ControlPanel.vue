@@ -111,6 +111,11 @@ const modes = [
           <label class="mb-1 block">季</label>
           <input v-model="main.season" :disabled="main.running" placeholder="0~99" class="h-8 w-full rounded bg-white px-3 outline-none">
         </div>
+
+        <div>
+          <label class="mb-1 block">集数偏移</label>
+          <input v-model="main.offset" :disabled="main.running" placeholder="1~∞" class="h-8 w-full rounded bg-white px-3 outline-none">
+        </div>
       </template>
 
       <div class="min-h-40px">

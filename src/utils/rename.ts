@@ -19,7 +19,7 @@ interface EpisodeHelpers {
   post: string
 }
 
-export function getNewNameByExtract(oldName: string, prefix: string, season: string, epHelpers: EpisodeHelpers, refName?: string) {
+export function getNewNameByExtract(oldName: string, prefix: string, season: string, epHelpers: EpisodeHelpers, refName?: string, offset?: string) {
   let episode: string | undefined
 
   if (epHelpers.pre || epHelpers.post)
@@ -39,7 +39,13 @@ export function getNewNameByExtract(oldName: string, prefix: string, season: str
     return ''
   // ext
   const m = oldName.match(/(\.[a-z0-9]+)$/i)
+  episode = offsetEpisode(episode, offset)
   return `${prefix}${prefix.endsWith('.') ? '' : '.'}S${season}E${episode}${m ? m[1] : ''}`
+}
+
+function offsetEpisode(episodeStr: string, offset?: string): string {
+  const n = Number.parseInt(episodeStr)
+  return normalizeEpisode(String(n + (offset ? Number.parseInt(offset) : 0)))
 }
 
 export function getEpisodeByCompare(oldName: string, refName: string): string | undefined {
