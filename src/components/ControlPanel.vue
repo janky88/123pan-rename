@@ -112,9 +112,20 @@ const modes = [
           <input v-model="main.season" :disabled="main.running" placeholder="0~99" class="h-8 w-full rounded bg-white px-3 outline-none">
         </div>
 
-        <div>
-          <label class="mb-1 block">集数偏移</label>
-          <input v-model="main.offset" :disabled="main.running" placeholder="1~∞" class="h-8 w-full rounded bg-white px-3 outline-none">
+        <div class="grid cols-2 gap-x-3">
+          <div>
+            <label class="mb-1 block">集数偏移</label>
+            <input v-model="main.offset" :disabled="main.running" placeholder="1~∞" class="h-8 w-full rounded bg-white px-3 outline-none">
+          </div>
+
+          <div>
+            <label class="mb-1 block">集数前缀0个数</label>
+            <input
+              v-model.number="main.leadingZeroCount"
+              type="number" :disabled="main.running" placeholder="1~10" class="h-8 w-full rounded bg-white px-3 outline-none"
+              @blur="main.leadingZeroCount = main.clampLeadingZeroCount(main.leadingZeroCount)"
+            >
+          </div>
         </div>
       </template>
 

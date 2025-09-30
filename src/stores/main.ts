@@ -18,6 +18,7 @@ export const useMainStore = defineStore('main', () => {
   const prefix = ref('')
   const season = ref('')
   const offset = ref('')
+  const leadingZeroCount = ref<number>(3)
   const epHelperPre = ref('')
   const epHelperPost = ref('')
 
@@ -123,7 +124,7 @@ export const useMainStore = defineStore('main', () => {
   }, 300)
 
   // generate new filenames
-  watch([list, activeMode, prefix, season, offset, from, to, epHelperPre, epHelperPost], debouncedNameGenerator, { immediate: true })
+  watch([list, activeMode, prefix, season, offset, from, to, leadingZeroCount, epHelperPre, epHelperPost], debouncedNameGenerator, { immediate: true })
 
   function guessPrefixAndSeason() {
     prefix.value = guessPrefix(videoList.value)
@@ -189,11 +190,37 @@ export const useMainStore = defineStore('main', () => {
     }
   }
 
+  function clampLeadingZeroCount(n: number | string) {
+    if (typeof (n) === 'string') {
+      n = Number.parseInt(n)
+    }
+    else {
+      n = Math.trunc(n)
+    }
+    if (Number.isNaN(n)) {
+      n = 3
+    }
+    if (n < 1 || n > 10) {
+      n = 3
+    }
+    return n
+  }
+
   function getNewName(oldName: string, season: string, refName?: string) {
-    if (activeMode.value === 'extract')
-      return getNewNameByExtract(oldName, prefix.value.trim(), season, { pre: epHelperPre.value, post: epHelperPost.value }, refName, offset.value)
-    else
+    if (activeMode.value === 'extract') {
+      return getNewNameByExtract(
+        oldName,
+        prefix.value.trim(),
+        season,
+        { pre: epHelperPre.value, post: epHelperPost.value },
+        refName,
+        offset.value,
+        clampLeadingZeroCount(leadingZeroCount.value),
+      )
+    }
+    else {
       return getNewNameByExp(oldName, from.value, to.value)
+    }
   }
 
   function clearHelper() {
@@ -223,6 +250,8 @@ export const useMainStore = defineStore('main', () => {
     prefix,
     season,
     offset,
+    leadingZeroCount,
+    clampLeadingZeroCount,
     error,
     warning,
     processData,

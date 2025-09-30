@@ -19,17 +19,25 @@ interface EpisodeHelpers {
   post: string
 }
 
-export function getNewNameByExtract(oldName: string, prefix: string, season: string, epHelpers: EpisodeHelpers, refName?: string, offset?: string) {
+export function getNewNameByExtract(
+  oldName: string,
+  prefix: string,
+  season: string,
+  epHelpers: EpisodeHelpers,
+  refName?: string,
+  offset?: string,
+  leadingZeroCount?: number,
+) {
   let episode: string | undefined
 
   if (epHelpers.pre || epHelpers.post)
-    episode = getEpisodeByHelpers(oldName, epHelpers)
+    episode = getEpisodeByHelpers(oldName, epHelpers, leadingZeroCount)
 
   if (!episode && refName)
-    episode = getEpisodeByCompare(oldName, refName)
+    episode = getEpisodeByCompare(oldName, refName, leadingZeroCount)
 
   if (!episode)
-    episode = getEpisode(oldName)
+    episode = getEpisode(oldName, leadingZeroCount)
   // normalize season
   season ||= '1'
   const seasonNumber = Number.parseInt(season)
@@ -39,16 +47,16 @@ export function getNewNameByExtract(oldName: string, prefix: string, season: str
     return ''
   // ext
   const m = oldName.match(/(\.[a-z0-9]+)$/i)
-  episode = offsetEpisode(episode, offset)
+  episode = offsetEpisode(episode, offset, leadingZeroCount)
   return `${prefix}${prefix.endsWith('.') ? '' : '.'}S${season}E${episode}${m ? m[1] : ''}`
 }
 
-function offsetEpisode(episodeStr: string, offset?: string): string {
+function offsetEpisode(episodeStr: string, offset?: string, leadingZeroCount?: number): string {
   const n = Number.parseInt(episodeStr)
-  return normalizeEpisode(String(n + (offset ? Number.parseInt(offset) : 0)))
+  return normalizeEpisode(String(n + (offset ? Number.parseInt(offset) : 0)), leadingZeroCount)
 }
 
-export function getEpisodeByCompare(oldName: string, refName: string): string | undefined {
+export function getEpisodeByCompare(oldName: string, refName: string, leadingZeroCount?: number): string | undefined {
   const matchesO = [...oldName.matchAll(/\d+/g)].map(x => x[0])
   const matchesR = [...refName.matchAll(/\d+/g)].map(x => x[0])
   if (matchesO.length === 0 || matchesO.length !== matchesR.length)
@@ -62,14 +70,14 @@ export function getEpisodeByCompare(oldName: string, refName: string): string | 
     const n = Number.parseInt(x)
     return !Number.isNaN(n) && n !== 0 && n < 1000
   })
-  return filtered.length === 1 ? normalizeEpisode(filtered[0]) : undefined
+  return filtered.length === 1 ? normalizeEpisode(filtered[0], leadingZeroCount) : undefined
 }
 
-function normalizeEpisode(x: string) {
-  return String(+x).padStart(3, '0')
+function normalizeEpisode(x: string, leadingZeroCount = 3) {
+  return String(+x).padStart(leadingZeroCount, '0')
 }
 
-export function getEpisodeByHelpers(oldName: string, epHelpers: EpisodeHelpers) {
+export function getEpisodeByHelpers(oldName: string, epHelpers: EpisodeHelpers, leadingZeroCount?: number) {
   const { pre, post } = epHelpers
   if (!pre && !post)
     return
@@ -78,37 +86,37 @@ export function getEpisodeByHelpers(oldName: string, epHelpers: EpisodeHelpers) 
   if (preIndex === -1 && postIndex === -1)
     return
   const shorted = oldName.slice(preIndex + pre.length, postIndex)
-  const parsed = Number.parseInt(getEpisode(shorted))
+  const parsed = Number.parseInt(getEpisode(shorted, leadingZeroCount))
   if (Number.isInteger(parsed))
-    return normalizeEpisode(String(parsed))
+    return normalizeEpisode(String(parsed), leadingZeroCount)
 }
 
-export function getEpisode(oldName: string) {
+export function getEpisode(oldName: string, leadingZeroCount?: number) {
   // trim ext
   oldName = oldName.replace(/\.[a-z0-9]+$/i, '')
 
   {
     const [_, _s, episode] = oldName.match(SeasonEpisodeExtract) || []
     if (episode)
-      return normalizeEpisode(episode)
+      return normalizeEpisode(episode, leadingZeroCount)
   }
 
   {
     const [_, episode] = oldName.match(EpisodeExtract1) || []
     if (episode)
-      return normalizeEpisode(episode)
+      return normalizeEpisode(episode, leadingZeroCount)
   }
 
   {
     const [_, episode] = oldName.match(EpisodeExtract2) || []
     if (episode)
-      return normalizeEpisode(episode)
+      return normalizeEpisode(episode, leadingZeroCount)
   }
 
   {
     const [_, episode] = oldName.match(EpisodeExtract3) || []
     if (episode)
-      return normalizeEpisode(episode)
+      return normalizeEpisode(episode, leadingZeroCount)
   }
 
   return '001'
